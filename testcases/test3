@@ -1,0 +1,19 @@
+[](p∨q) |- [](p∨q) 
+[](p∨q), [](p->r) |- [](p->r)
+[](p∨q), [](p->r), [](q->r) |- [](q->r)
+[](p∨q), [](p->r), [](q->r),[] |- p∨q
+[](p∨q), [](p->r), [](q->r),[] |- p->r
+[](p∨q), [](p->r), [](q->r),[] |- q->r
+[](p∨q), [](p->r), [](q->r),[] |- r
+[](p∨q), [](p->r), [](q->r) |- []r
+
+# Garson 20 exe 1.7 (d)
+# Jenn Wang Modal Logic and Metaphysics, Lecture 3 Sept 27
+# branching case
+
+
+
+
+
+
+

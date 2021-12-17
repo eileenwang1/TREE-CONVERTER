@@ -1,0 +1,8 @@
+p->q |- p->q
+p->q, ~~p |- ~~p
+p->q, ~~p |- p
+p->q, ~~p |- p -> q
+p->q, ~~p |- q
+p->q |- ~~p -> q
+
+# Garson 171
