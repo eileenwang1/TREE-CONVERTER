@@ -1,0 +1,5 @@
+size of tree:  2
+['[](p->q)', '[]p', '~(~[]q->[]r)', '~[]q', '~[]r', '[]q', '⊥', '~~(~[]q->[]r)']
+['~q', 'p->q', 'p', 'q', '⊥', '~~q']
+
+# if there is a contradiction, do nothing

@@ -1,3 +1,30 @@
+class Semantics(list):
+    def __init__(self):
+        pass
+
+    def append(self,new):
+        if len(self)==0 or not isinstance(self[-1],list):
+            if not isinstance(new,list):
+                return list.append(self,new)
+            else:
+                for i in new:
+                    list.append(self,[i])
+                return
+        else:
+            # find the number of branchs
+            counter = 0
+            for i in range(1,len(self)+1):
+                if isinstance(self[0-i],list):
+                    counter += 1
+            print("counter: ",counter)
+            if not isinstance(new,list):
+                for i in range (1,counter+1):
+                    Semantics.append(self[0-i],new)
+                return
+            else:
+                for i in range(1,counter+1):
+                    Semantics.append(self[0-i],new)
+
 # from Data Structures, Spring 2019
 class Graph:
     """Representation of a simple graph using an adjacency map."""
@@ -229,17 +256,17 @@ class Graph:
         return None
         # raise ValueError('vertex DNE')
         
-    def goal_to_vertex(self,goal):
-        # input: goal of a vertex
-        # return the vertex
-        if len(self._outgoing)==0:
-            print("GOAL: ",goal)
-            raise ValueError('vertex DNE')
-        for i in self._outgoing.keys():
-            if i.goal==goal:
-                return i
-        return None
-        # raise ValueError('vertex DNE')
+    # def goal_to_vertex(self,goal):
+    #     # input: goal of a vertex
+    #     # return the vertex
+    #     if len(self._outgoing)==0:
+    #         print("GOAL: ",goal)
+    #         raise ValueError('vertex DNE')
+    #     for i in self._outgoing.keys():
+    #         if i.goal==goal:
+    #             return i
+    #     return None
+    #     # raise ValueError('vertex DNE')
 
     def encoding_to_edge(self,rule_encoding):
         # input: encoding of a edge
@@ -250,13 +277,13 @@ class Graph:
                 return edges[i]
         return None
     
-    def first_vertex_without_goal(self):
-        # return the vertex with the smallest idx that is without goal
-        vertices=sorted(self.vertices(), key = lambda u: u.idx)
-        for i in range(len(vertices)):
-            if vertices[i].goal==None or vertices[i].goal=="":
-                return vertices[i]
-        return None
+    # def first_vertex_without_goal(self):
+    #     # return the vertex with the smallest idx that is without goal
+    #     vertices=sorted(self.vertices(), key = lambda u: u.idx)
+    #     for i in range(len(vertices)):
+    #         if vertices[i].goal==None or vertices[i].goal=="":
+    #             return vertices[i]
+    #     return None
     
     def incoming_edge(self,v):
         # find the edge that connects v to a vertex of smaller idx
@@ -272,7 +299,22 @@ class Graph:
         return curr_edge
 
                 
-
+a = Semantics()
+a.append(1)
+print(a)
+print(len(a))
+a.append([3,4])
+print(a)
+print(len(a))
+a.append(7)
+print(a)
+print(len(a))
+a.append([9,10])
+print(a)
+print(len(a))
+a.append(11)
+print(a)
+print(len(a))
 
 
 

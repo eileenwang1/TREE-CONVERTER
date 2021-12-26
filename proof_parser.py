@@ -8,7 +8,7 @@ class ProofParser(object):
     def __init__(self,filename):
         self.filename = filename
         self.content_list = self.read_file()
-        self.proof_list = self.prase_subproof()
+        self.proof_list = self.parse_subproof()
 
     def read_file(self):
         f = open(self.filename, mode="r")
@@ -54,7 +54,7 @@ class Proof(object):
         
 
 
-sp1 = Subproof("[](p∨q), [](p->r), [](q->r) |- []r")
+# sp1 = Subproof("[](p∨q), [](p->r), [](q->r) |- []r")
 
 # # for i in range(len(sp1.premises)):
 # #     print(sp1.premises[i])
