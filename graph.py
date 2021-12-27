@@ -1,29 +1,84 @@
 class Semantics(list):
-    def __init__(self):
-        pass
+    def __init__(self,idx):
+        self.idx = idx
 
-    def append(self,new):
+    def is_in(self,new,branch=""):
+        new = new.strip()
+        # this is not a branching tree
         if len(self)==0 or not isinstance(self[-1],list):
-            if not isinstance(new,list):
-                return list.append(self,new)
+            for i in range(len(self)):
+                self[i] = self[i].strip()
+                if self[i] == new:
+                    return True
+            return False
+        
+        # this is a branching tree
+        if branch=="":
+            # branch is not specified
+            for i in range(len(self)):
+                if not isinstance(self[-1],list):
+                    self[i] = self[i].strip()
+                    if self[i]==new:
+                        return True
+                else:
+                    if self[i].is_in(new)==True:
+                        return True
+            return False
+
+        # branch is specified
+        for i in range(len(self)-2):
+            if not isinstance(self[-1],list):
+                self[i] = self[i].strip()
+                if self[i]==new:
+                    return True
             else:
-                for i in new:
-                    list.append(self,[i])
-                return
+                raise Exception("list element at index {}".format(i))
+        if branch[0]=='l':
+            self[-2].is_in(new,branch[1:])
+        elif branch[0]=='r':
+            self[-1].is_in(new,branch[1:])
         else:
-            # find the number of branchs
-            counter = 0
-            for i in range(1,len(self)+1):
-                if isinstance(self[0-i],list):
-                    counter += 1
-            print("counter: ",counter)
-            if not isinstance(new,list):
-                for i in range (1,counter+1):
-                    Semantics.append(self[0-i],new)
-                return
+            raise Exception("wrong branch encoding {}".format(branch))
+
+
+    def append(self,new,branch=""):
+        # if branch is not specified
+        if branch == "":
+            if len(self)==0 or not isinstance(self[-1],list):
+                if not isinstance(new,list):
+                    if not Semantics.is_in(self,new,branch):
+                        return list.append(self,new)
+                    return 
+                else:
+                    for i in new:
+                        list.append(self,[i])
+                    return
             else:
-                for i in range(1,counter+1):
-                    Semantics.append(self[0-i],new)
+                # if the tree has branches
+                # find the number of branchs
+                counter = 0
+                for i in range(1,len(self)+1):
+                    if isinstance(self[0-i],list):
+                        counter += 1
+                print("counter: ",counter)
+                if not isinstance(new,list):
+                    for i in range (1,counter+1):
+                        Semantics.append(self[0-i],new,branch)
+                    return
+                else:
+                    for i in range(1,counter+1):
+                        Semantics.append(self[0-i],new,branch)
+                    return 
+        else:
+            # if branch is specified
+            if branch[0]=='l':
+                return Semantics.append(self[-2],new,branch[1:])
+            elif branch[0]=='r':
+                return Semantics.append(self[-1],new,branch[1:])
+            else:
+                raise Exception("wrong branch encoding {}".format(branch))
+
+
 
 # from Data Structures, Spring 2019
 class Graph:
@@ -38,7 +93,7 @@ class Graph:
             """Do not call constructor directly. Use Graph's insert_vertex(x)."""
             self.idx = idx
             self.syntax = syntax
-            self.semantics = semantics
+            self.semantics = Semantics(idx)
         # def element(self):
         #     """Return element associated with this vertex."""
         #     return self._element
@@ -178,7 +233,7 @@ class Graph:
 
     def vertices(self):
         """Return an iteration of all vertices of the graph."""
-        return self._outgoing.keys()
+        return list(self._outgoing.keys())
 
     def edge_count(self):
         """Return the number of edges in the graph."""
@@ -299,22 +354,38 @@ class Graph:
         return curr_edge
 
                 
-a = Semantics()
-a.append(1)
-print(a)
-print(len(a))
-a.append([3,4])
-print(a)
-print(len(a))
-a.append(7)
-print(a)
-print(len(a))
-a.append([9,10])
-print(a)
-print(len(a))
-a.append(11)
-print(a)
-print(len(a))
+# a = Semantics()
+# a.append(1)
+# print(a)
+# print(len(a))
+# a.append([3,4])
+# print(a)
+# print(len(a))
+# a.append(7)
+# print(a)
+# print(len(a))
+# a.append([9,10])
+# print(a)
+# print(len(a))
+# a.append(11)
+# print(a)
+# print(len(a))
+
+# g = Graph()
+# g.insert_vertex(1)
+# g.insert_vertex(2)
+# g.insert_vertex(0)
+# g.idx_to_vertex(1).syntax = [4,5,6]
+# print(type(g.idx_to_vertex(1).semantics))
+# g.idx_to_vertex(1).semantics.append("hello")
+# g.idx_to_vertex(2).semantics.append(["this is rediculous","hi"])
+# g.idx_to_vertex(0).semantics.append("hey")
+
+# for i in range(3):
+#     print(g.idx_to_vertex(i).semantics)
+
+
+
 
 
 
