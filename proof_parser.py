@@ -34,7 +34,7 @@ class Subproof(object):
         self.premises, self.conclusion = self.parse_line(line_string)
 
     def __str__(self):
-        return ", ".join(self.premises) + "\n" + self.conclusion
+        return ", ".join(self.premises) + "|-" + self.conclusion
 
     def parse_line(self,line_string):
         l = line_string.split("|-")

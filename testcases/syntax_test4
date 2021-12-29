@@ -1,5 +1,2 @@
-size of tree:  2
-['[](p->q)', '[]p', '~((~[]q->[]r))', '[]q', '~~[]q', '~~[]q ∨ []r']
+['[](p->q)', '[]p', '~(~[]q->[]r)', '[]q', '~~[]q', '~~[]q ∨ []r']
 ['p->q', 'p', 'q']
-
-# this case using logical equivalence is harder to cover

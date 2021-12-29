@@ -1,4 +1,1 @@
-size of tree:  1
-['p->q', '~(~~p -> q)', '~~p', 'p', 'p -> q', 'q']
-
-# need to apply the tree rule for the negation of conclusion, and derive a contradiction
+['p->q', '~(~~p -> q)', '~~p -> ~~p', '~~p -> p', '~~p -> (p -> q)', '~~p -> q']

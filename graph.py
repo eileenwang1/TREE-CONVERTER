@@ -194,7 +194,7 @@ class Graph:
     def __init__(self, directed=False):
         """Create an empty graph (undirected, by default).
 
-        Graph is directed if optional paramter is set to True.
+        Graph is directed if optional parameter is set to True.
         """
         self._outgoing = {}
         # only create second map for directed graph; use alias for undirected
