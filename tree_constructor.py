@@ -52,8 +52,17 @@ class TreeConstructor(object):
         # print("curr_sentence: ",curr_sentence)
         # print("curr_vertex: ",curr_vertex)
 
-        curr_sentence = curr_sentence.strip()
+        curr_sentence = self.strip_parentheses(curr_sentence)
         self.graph.idx_to_vertex(curr_vertex).semantics.append(curr_sentence,curr_branch)
+        # # contradiction
+        # path = self.graph.idx_to_vertex(curr_vertex).semantics.path(curr_branch)
+        # a recursive function that finds contradiction
+
+        # print(self.graph.idx_to_vertex(curr_vertex).semantics)
+        # print("curr_branch: ",curr_branch)
+        # path = self.graph.idx_to_vertex(curr_vertex).semantics.path(curr_branch)
+        # print("path: ", path)
+        # print("\n")
 
         # double negation
         num_neg, inner_sentence = self.num_neg(curr_sentence)
@@ -69,7 +78,9 @@ class TreeConstructor(object):
         
         conditional_false = self.conditional_false(curr_sentence)
         box_in = self.box_in(curr_sentence)
+        conditional_truth = self.conditional_truth(curr_sentence)
         is_disjunction = self.is_disjunction(curr_sentence)
+        # negation false
         if conditional_false:
             # self.graph.vertices()[curr_vertex].semantics.append(curr_sentence,curr_branch)
             for i in conditional_false:
@@ -77,21 +88,31 @@ class TreeConstructor(object):
             for i in conditional_false:
                 self.apply_tree_rules(i,curr_vertex,curr_branch)
 
-        elif box_in:
-            # self.graph.idx_to_vertex(curr_vertex).semantics.append(curr_sentence,curr_branch)
-            if curr_vertex!=0:
-                self.graph.idx_to_vertex(curr_vertex-1).semantics.append(box_in,curr_branch)
-                self.apply_tree_rules(box_in,curr_vertex-1,curr_branch)
-        
+        # elif box_in:
+        #     # self.graph.idx_to_vertex(curr_vertex).semantics.append(curr_sentence,curr_branch)
+        #     if curr_vertex!=0:
+        #         self.graph.idx_to_vertex(curr_vertex-1).semantics.append(box_in,curr_branch)
+        #         self.apply_tree_rules(box_in,curr_vertex-1,curr_branch)
+
+        elif conditional_truth:
+            if len(conditional_truth)!=2:
+                raise Exception("conditional clauses number is not 2")
+            u,v = conditional_truth
+            # self.graph.idx_to_vertex(curr_vertex).semantics.append([u,v],curr_branch)
+            self.apply_tree_rules(u,curr_vertex,curr_branch+'l')
+            self.apply_tree_rules(v,curr_vertex,curr_branch+'r')
+
         elif is_disjunction:
             if len(is_disjunction)!=2:
                 raise Exception("disjuncts number is not 2")
             u,v = is_disjunction
-            self.graph.idx_to_vertex(curr_vertex).semantics.append([u,v],curr_branch)
+            # self.graph.idx_to_vertex(curr_vertex).semantics.append([u,v],curr_branch)
             self.apply_tree_rules(u,curr_vertex,curr_branch+'l')
             self.apply_tree_rules(v,curr_vertex,curr_branch+'r')
+
         # for i in range(self.graph.size()):
         #     print(self.graph.idx_to_vertex(i).semantics)
+
         return
 
     def tree_check(self):
@@ -170,11 +191,33 @@ class TreeConstructor(object):
             return to_return
         return False
 
+    def conditional_truth(self,input_sentence):
+        # check whether the main connective of a sentence is a conditional
+        # if yes, return a 2-tuple of its conjuncts
+        # if no, return 0
+        input_sentence = self.strip_parentheses(input_sentence)
+        in_parentheses = 0
+        for i in range(len(input_sentence)):
+            if input_sentence[i]=='(':
+                in_parentheses += 1
+            elif input_sentence[i]==')':
+                in_parentheses -= 1
+            elif i < len(input_sentence)-1 and input_sentence[i:i+1]=='->' and in_parentheses==0:
+                u,v = input_sentence[:i], input_sentence[i+2:]
+                u = self.strip_parentheses(u)
+                if self.is_compound(u):
+                    u = '~('+u+'~'
+                else:
+                    u = '~'+u
+                v = self.strip_parentheses(v)
+                return u,v
+        return 0
+
     def is_disjunction(self,input_sentence):
         # check whether the main connective of a sentence is a conjunction
         # if yes, return a 2-tuple of its conjuncts
         # if no, return 0
-        input_sentence = input_sentence.strip()
+        input_sentence = self.strip_parentheses(input_sentence)
         in_parentheses = 0
         for i in range(len(input_sentence)):
             if input_sentence[i]=='(':
@@ -183,12 +226,8 @@ class TreeConstructor(object):
                 in_parentheses -= 1
             elif input_sentence[i]=='∨' and in_parentheses==0:
                 u,v = input_sentence[:i], input_sentence[i+1:]
-                u = u.strip()
-                u = u.strip("(")
-                u = u.strip(")")
-                v = v.strip()
-                v = v.strip("(")
-                v = v.strip(")")
+                u = self.strip_parentheses(u)
+                v = self.strip_parentheses(v)
                 return u,v
         return 0
 
@@ -222,7 +261,7 @@ class TreeConstructor(object):
         for i in range(1,len(curr_sentence)):
             if in_parentheses==0 and i!=len(curr_sentence)-1:
                 return curr_sentence
-            return curr_sentence[1:-1].strip()
+            return self.strip_parentheses(curr_sentence[1:-1])
 
 
 

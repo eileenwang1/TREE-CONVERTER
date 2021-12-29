@@ -1,7 +1,6 @@
 # coding: utf-8
 # -*- coding: utf-8 -*-
-# proof
-# premise + conclusion
+
 import copy
 
 class ProofParser(object):
@@ -52,17 +51,6 @@ class Proof(object):
         self.premises = self.subproof_list[-1].premises
         self.conclusion = self.subproof_list[-1].conclusion
         
-
-
-# sp1 = Subproof("[](p∨q), [](p->r), [](q->r) |- []r")
-
-# # for i in range(len(sp1.premises)):
-# #     print(sp1.premises[i])
-# print(sp1.premises)
-# print(sp1.conclusion)
-
-# pp = ProofParser("testcases/test1")
-# pp.read_file()
 
 
 

@@ -1,0 +1,5 @@
+size of tree:  1
+syntax:
+['p->q', '~(~~p -> q)', '~~p', 'p', 'p -> q', 'q']
+semantics:
+['p->q', '~(~~p -> q)', '~~p', '~q', 'p', 'p -> q', 'q']

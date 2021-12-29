@@ -60,7 +60,7 @@ class Semantics(list):
                 for i in range(1,len(self)+1):
                     if isinstance(self[0-i],list):
                         counter += 1
-                print("counter: ",counter)
+                # print("counter: ",counter)
                 if not isinstance(new,list):
                     for i in range (1,counter+1):
                         Semantics.append(self[0-i],new,branch)
@@ -70,15 +70,42 @@ class Semantics(list):
                         Semantics.append(self[0-i],new,branch)
                     return 
         else:
+            # if there is not a branch
+            if (len(self)<2) or (not isinstance(self[-2],list)) or (not isinstance(self[-1],list)):
+                list.append(self,[])
+                list.append(self,[])
+                # print("after append")
+                # print(self)
             # if branch is specified
             if branch[0]=='l':
-                return Semantics.append(self[-2],new,branch[1:])
+                try:
+                    return Semantics.append(self[-2],new,branch[1:])
+                except:
+                    print(self)
+                # return Semantics.append(self[-2],new,branch[1:])
+                
             elif branch[0]=='r':
                 return Semantics.append(self[-1],new,branch[1:])
             else:
                 raise Exception("wrong branch encoding {}".format(branch))
 
-
+    def path(self,branch=""):
+        # return a path(list) from the root to a designated branch
+        to_return = []
+        for i in range(len(self)):
+            if not isinstance(self[i],list):
+                to_return.append(self[i])
+            else:
+                if branch == 'l':
+                    return to_return + Semantics.path(self[i],branch[1:])
+                elif branch =='r':
+                    return to_return + Semantics.path(self[i+1],branch[1:])
+                elif branch=='':
+                    return [to_return + Semantics.path(self[i],branch[1:]),to_return + Semantics.path(self[i+1],branch[1:])]
+                else:
+                    raise Exception("wrong info in branch")
+        return to_return
+                    
 
 # from Data Structures, Spring 2019
 class Graph:
