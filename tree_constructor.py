@@ -5,7 +5,7 @@ class TreeConstructor(object):
     def __init__(self,proof):
         self.proof = proof
         self.syntax = []    # syntax is a list of lists, each list is a possible world
-        # self.graph = self.tree_init()
+        self.graph = Graph(directed=True)
 
     def syntax_init(self):
         # intialize a world, with premises and the negation of the conclusion
@@ -66,181 +66,107 @@ class TreeConstructor(object):
                 if to_append != "" and to_append not in self.syntax[box_count]:
                     self.syntax[box_count].append(to_append)
         
-                
+    def tree_init(self):
+        self.graph=Graph(directed=True)
+
+    def semantics(self):
+        # create root vertex
+        root_vertex = self.graph.insert_vertex()
+        self.tree_grow(0,root_vertex)
+        # copy stuff in syntax[0] into the root node
+        # until there is the need to create a new world-create a new world, and copy the corresponding stuff from syntax into the new world
+        # check whether there is a contradiction in the new world, if yes, stop; if no, continue with iterating syntax[0]
+        # check if every world has contradiction
+        to_print = self.vertex_contradiction(root_vertex)
+        # print("final check: ",to_print)
 
 
+    def box_false(self,curr_sentence):
+        # if ~[]p. return ~p
+        # else, return False
+        curr_sentence = self.strip_parentheses(curr_sentence)
+        if curr_sentence[0]!='~' or self.is_compound(curr_sentence):
+            return False
+        inner_sentence = self.strip_parentheses(curr_sentence[1:])
+        if inner_sentence[0:2]!="[]" or self.is_compound(inner_sentence):
+            return False
+        to_return = self.strip_parentheses(inner_sentence[2:])
+        if self.is_compound(to_return):
+            to_return = '~(' + to_return+')'
+        else:
+            to_return = '~' + to_return
+        return to_return
 
+    def tree_grow(self, syntax_idx,curr_vertex):
+        if syntax_idx>len(self.syntax):
+            raise Exception("wrong syntax_idx") 
+        if not isinstance(curr_vertex,Graph.Vertex):
+            raise Exception("wrong vertex")
+        curr_syntax = self.syntax[syntax_idx]
+        for i in range(len(curr_syntax)):
+            curr_sentence = self.strip_parentheses(curr_syntax[i])
+            curr_vertex.semantics.append(curr_sentence)
+            box_false = self.box_false(curr_sentence)
+            if box_false:
+                # create a new vertex
+                new_vertex = self.graph.insert_vertex()
+                # edge from the old world to the new world
+                self.graph.insert_edge(curr_vertex,new_vertex)
+                # find its distance from root node
+                new_syntax_idx = self.graph.path_length(new_vertex)
+                new_vertex.semantics.append(box_false)
+                self.tree_grow(new_syntax_idx,new_vertex)
+            # check whether there is contradiction
+            if self.vertex_contradiction(curr_vertex):
+                return
+        return 
 
+    def list_contradiction(self,path):
+        # return True if there is contradiction in a list
+        # does not cover the cases of logical equivalence
+        list_neg = []
+        list_inner = []
+        for i in range(len(path)):
+            num,inner = self.num_neg(path[i])
+            list_neg.append(num)
+            list_inner.append(inner)
+        for i in range(len(path)):
+            for j in range(i+1,len(path)):
+                if list_inner[i]==list_inner[j] and (list_neg[i]+list_neg[j])%2:
+                    return True
+        return False
 
+    def vertex_contradiction(self,vertex):
+        # return True and mark the vertex.contradiction = True
+        # there are two conditions that a vertex can have contradiction
+        # (1) all its accessible worlds are contradictory
+        # (2) all paths in the vertex have contradictions
+        # the first option
+        if vertex.contradiction==True:
+            return True
+        children = list(self.graph._outgoing[vertex].keys())
+        if len(children)!=0:
+            contra_children = 0
+            for i in range(len(children)):
+                if self.vertex_contradiction(children[i]):
+                    contra_children += 1
+            if contra_children == len(children):
+                vertex.contradiction = True
+                return True
+        # the second option
+        all_paths = vertex.semantics.path()
+        if len(all_paths)==0:
+            return False
+        contra_path = 0
+        for i in range(len(all_paths)):
+            if self.list_contradiction(all_paths[i]):
+                contra_path += 1
+        if contra_path==len(all_paths):
+            vertex.contradiction = True
 
+            return True
             
-
-
-
-    # def tree_init(self):
-    #     graph=Graph(directed=True)
-    #     syntax = []
-    #     premises = self.proof.premises
-    #     for i in range(len(premises)):
-    #         syntax.append(str(premises[i]))
-    #     conclusion = str(self.proof.conclusion)
-    #     neg_conclusion = self.neg_conclusion(conclusion)
-    #     syntax.append(neg_conclusion)
-    #     graph.insert_vertex(syntax)
-    #     return graph
-    # # syntax list
-    # def tree_grow(self):
-    #     init_syntax_list = copy.deepcopy(self.graph.idx_to_vertex(0).syntax)
-    #     for i in range(1,len(self.proof.subproof_list)-1):
-    #         curr_subproof = self.proof.subproof_list[i]
-    #         # if curr_subproof.premises==self.proof.premises or curr_subproof.premises==init_syntax_list:
-    #         #     self.graph.idx_to_vertex(0).append(curr_subproof.conclusion)
-    #         #     continue
-            
-    #         assumptions = []
-    #         starting_idx = len(self.proof.premises)
-    #         if curr_subproof[:starting_idx+1]==init_syntax_list:
-    #             assumptions = curr_subproof[starting_idx+1:]
-    #         elif curr_subproof[:starting_idx]==self.proof.premises:
-    #             assumptions = curr_subproof[starting_idx:]
-    #         else:
-    #             print(curr_subproof)
-    #             raise Exception("wrong premises")
-    #         box_count = 0
-    #         for j in range(len(assumptions)):
-    #             if assumptions[j]=="[]":
-    #                 box_count+=1
-
-
-    #         box_count = curr_subproof.premises.count("[]")
-    #         if box_count <= self.graph.size()-1:
-    #             # append conclusion to the vertex with the corresponding vertex
-    #             curr_vertex = self.graph.idx_to_vertex(box_count)
-    #             if curr_subproof.conclusion not in curr_vertex.syntax:
-    #                 # no repeated sentences
-    #                 curr_vertex.syntax.append(curr_subproof.conclusion)
-    #         else:
-    #             # add a new vertex
-    #             for j in range(self.graph.size(),box_count):
-    #                 self.graph.insert_vertex([])
-    #             syntax = [curr_subproof.conclusion]
-    #             self.graph.insert_vertex(syntax)
-
-    # def syntax_to_semantics(self):
-        
-    #     # recursive. breakdown complex sentences
-    #     for i in range(self.graph.size()):
-    #         syntax_list = self.graph.idx_to_vertex(i).syntax
-    #         # print(i)
-    #         # print(self.graph.idx_to_vertex(i).semantics)
-    #         for j in range(len(syntax_list)):
-    #             curr_sentence = syntax_list[j].strip()
-    #             self.apply_tree_rules(curr_sentence,i)
-
-    #             # contradiction
-
-    # def apply_tree_rules(self,curr_sentence,curr_vertex,curr_branch=""):
-    #     # print("curr_sentence: ",curr_sentence)
-    #     # print("curr_vertex: ",curr_vertex)
-
-    #     curr_sentence = self.strip_parentheses(curr_sentence)
-    #     self.graph.idx_to_vertex(curr_vertex).semantics.append(curr_sentence,curr_branch)
-    #     # # contradiction
-    #     # path = self.graph.idx_to_vertex(curr_vertex).semantics.path(curr_branch)
-    #     # a recursive function that finds contradiction
-
-    #     # print(self.graph.idx_to_vertex(curr_vertex).semantics)
-    #     # print("curr_branch: ",curr_branch)
-    #     # path = self.graph.idx_to_vertex(curr_vertex).semantics.path(curr_branch)
-    #     # print("path: ", path)
-    #     # print("\n")
-
-    #     # double negation
-    #     num_neg, inner_sentence = self.num_neg(curr_sentence)
-    #     if num_neg%2==0:
-    #         new_sentence = inner_sentence
-    #     else:
-    #         if self.is_compound(inner_sentence):
-    #             new_sentence = "~("+inner_sentence+')'
-    #         else:
-    #             new_sentence = '~'+inner_sentence
-    #     if num_neg>1 and new_sentence != curr_sentence:
-    #         self.apply_tree_rules(new_sentence,curr_vertex,curr_branch)
-        
-    #     conditional_false = self.conditional_false(curr_sentence)
-    #     box_in = self.box_in(curr_sentence)
-    #     conditional_truth = self.conditional_truth(curr_sentence)
-    #     is_disjunction = self.is_disjunction(curr_sentence)
-    #     # negation false
-    #     if conditional_false:
-    #         # self.graph.vertices()[curr_vertex].semantics.append(curr_sentence,curr_branch)
-    #         for i in conditional_false:
-    #             self.graph.vertices()[curr_vertex].semantics.append(i,curr_branch)
-    #         for i in conditional_false:
-    #             self.apply_tree_rules(i,curr_vertex,curr_branch)
-
-    #     # elif box_in:
-    #     #     # self.graph.idx_to_vertex(curr_vertex).semantics.append(curr_sentence,curr_branch)
-    #     #     if curr_vertex!=0:
-    #     #         self.graph.idx_to_vertex(curr_vertex-1).semantics.append(box_in,curr_branch)
-    #     #         self.apply_tree_rules(box_in,curr_vertex-1,curr_branch)
-
-    #     elif conditional_truth:
-    #         if len(conditional_truth)!=2:
-    #             raise Exception("conditional clauses number is not 2")
-    #         u,v = conditional_truth
-    #         # self.graph.idx_to_vertex(curr_vertex).semantics.append([u,v],curr_branch)
-    #         self.apply_tree_rules(u,curr_vertex,curr_branch+'l')
-    #         self.apply_tree_rules(v,curr_vertex,curr_branch+'r')
-
-    #     elif is_disjunction:
-    #         if len(is_disjunction)!=2:
-    #             raise Exception("disjuncts number is not 2")
-    #         u,v = is_disjunction
-    #         # self.graph.idx_to_vertex(curr_vertex).semantics.append([u,v],curr_branch)
-    #         self.apply_tree_rules(u,curr_vertex,curr_branch+'l')
-    #         self.apply_tree_rules(v,curr_vertex,curr_branch+'r')
-
-    #     # for i in range(self.graph.size()):
-    #     #     print(self.graph.idx_to_vertex(i).semantics)
-
-    #     return
-
-    # def tree_check(self):
-    #     pass
-        
-    # def conditional_false(self,input_sentence):
-    #     # if a conditional false sentence, return a tuple of two simpler sentence
-    #     # else, return 0
-    #     curr_sentence = self.strip_parentheses(input_sentence)
-
-    #     # curr_sentence = input_sentence.strip()
-    #     # if curr_sentence[0]=='(' and curr_sentence[-1]==')':
-    #     #     curr_sentence=curr_sentence[1:-1].strip()
-    #     if curr_sentence[0]!='~':
-    #         return 0
-
-    #     in_paranthesis = 0
-    #     # conditional_false = 0
-    #     curr_sentence = self.strip_parentheses(curr_sentence[1:])
-    #     # print(curr_sentence)
-
-    #     for k in range(len(curr_sentence)):
-    #         if curr_sentence[k]== '(':
-    #             in_paranthesis+=1
-    #         elif curr_sentence[k]==')':
-    #             in_paranthesis-=1
-    #         elif k < len(curr_sentence)-1 and curr_sentence[k:k+2]=="->" and in_paranthesis==0:
-    #             to_return1 = self.strip_parentheses(curr_sentence[:k])
-    #             to_return2 = self.strip_parentheses(curr_sentence[k+2:])
-    #             if self.is_compound(to_return2):
-    #                 to_return2 = "~("+to_return2+')'
-    #             else:
-    #                 to_return2 = '~'+to_return2
-    #             # print(to_return1, to_return2)
-    #             return to_return1,to_return2
-
-    #     return 0
+        return False  
 
     def num_neg(self,input_sentence,num=0):
         input_sentence = self.strip_parentheses(input_sentence)
@@ -273,79 +199,10 @@ class TreeConstructor(object):
                     return True
         return False
 
-
-    # def box_in(self,input_sentence):
-    #     input_sentence = input_sentence.strip()
-    #     if input_sentence[0:2]=='[]':
-    #         to_return = input_sentence[2:]
-    #         to_return = self.strip_parentheses(to_return)
-    #         return to_return
-    #     return False
-
-    # def conditional_truth(self,input_sentence):
-    #     # check whether the main connective of a sentence is a conditional
-    #     # if yes, return a 2-tuple of its conjuncts
-    #     # if no, return 0
-    #     input_sentence = self.strip_parentheses(input_sentence)
-    #     in_parentheses = 0
-    #     for i in range(len(input_sentence)):
-    #         if input_sentence[i]=='(':
-    #             in_parentheses += 1
-    #         elif input_sentence[i]==')':
-    #             in_parentheses -= 1
-    #         elif i < len(input_sentence)-1 and input_sentence[i:i+1]=='->' and in_parentheses==0:
-    #             u,v = input_sentence[:i], input_sentence[i+2:]
-    #             u = self.strip_parentheses(u)
-    #             if self.is_compound(u):
-    #                 u = '~('+u+'~'
-    #             else:
-    #                 u = '~'+u
-    #             v = self.strip_parentheses(v)
-    #             return u,v
-    #     return 0
-
-    # def is_disjunction(self,input_sentence):
-    #     # check whether the main connective of a sentence is a conjunction
-    #     # if yes, return a 2-tuple of its conjuncts
-    #     # if no, return 0
-    #     input_sentence = self.strip_parentheses(input_sentence)
-    #     in_parentheses = 0
-    #     for i in range(len(input_sentence)):
-    #         if input_sentence[i]=='(':
-    #             in_parentheses += 1
-    #         elif input_sentence[i]==')':
-    #             in_parentheses -= 1
-    #         elif input_sentence[i]=='∨' and in_parentheses==0:
-    #             u,v = input_sentence[:i], input_sentence[i+1:]
-    #             u = self.strip_parentheses(u)
-    #             v = self.strip_parentheses(v)
-    #             return u,v
-    #     return 0
-
-    # def neg_conclusion(self,conclusion):
-    #     if self.is_compound and self.parentheses_needed:
-    #         to_return = "~("+conclusion+')'
-    #     else:
-    #         to_return = '~'+conclusion
-    #     return to_return
-
-    # def parentheses_needed(self,conclusion):
-    #     in_parentheses = 0
-    #     add_parentheses = 0
-    #     for i in range(len(conclusion)):
-    #         if conclusion[i]=='(':
-    #             in_parentheses+=1
-    #         elif conclusion[i]==')':
-    #             in_parentheses-=1
-    #         if in_parentheses==0:
-    #             if conclusion[i] in ['&', '∨','-']:
-    #                 add_parentheses+=1
-    #         if add_parentheses>0:
-    #             return 1
-    #     return 0
-
     def strip_parentheses(self,curr_sentence):
         curr_sentence = curr_sentence.strip()
+        if curr_sentence=="":
+            return ""
         if curr_sentence[0]!='(' or curr_sentence[-1]!=')':
             return curr_sentence
         in_parentheses = 1

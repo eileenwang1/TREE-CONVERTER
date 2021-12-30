@@ -1,0 +1,5 @@
+syntax: 
+['p->q', '~(~~p -> q)', '~~p -> ~~p', '~~p -> p', '~~p -> (p -> q)', '~~p -> q']
+semantics:
+['p->q', '~(~~p -> q)', '~~p -> ~~p', '~~p -> p', '~~p -> (p -> q)', '~~p -> q']
+has contradiction:  True

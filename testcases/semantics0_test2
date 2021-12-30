@@ -1,0 +1,8 @@
+syntax: 
+['[]p & []q', '~[](p & q)', '[]p', '[]q']
+['p', 'q', 'p & q']
+semantics:
+['[]p & []q', '~[](p & q)']
+has contradiction:  True
+['~(p & q)', 'p', 'q', 'p & q']
+has contradiction:  True

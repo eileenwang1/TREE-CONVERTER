@@ -90,18 +90,18 @@ class Semantics(list):
                 raise Exception("wrong branch encoding {}".format(branch))
 
     def path(self,branch=""):
-        # return a path(list) from the root to a designated branch
-        to_return = []
+        # return a list of paths
+        to_return = [[]]
         for i in range(len(self)):
             if not isinstance(self[i],list):
-                to_return.append(self[i])
+                to_return[0].append(self[i])
             else:
                 if branch == 'l':
-                    return to_return + Semantics.path(self[i],branch[1:])
+                    return [to_return[0] + Semantics.path(self[i],branch[1:])]
                 elif branch =='r':
-                    return to_return + Semantics.path(self[i+1],branch[1:])
+                    return [to_return[0] + Semantics.path(self[i+1],branch[1:])]
                 elif branch=='':
-                    return [to_return + Semantics.path(self[i],branch[1:]),to_return + Semantics.path(self[i+1],branch[1:])]
+                    return [to_return[0] + Semantics.path(self[i],branch[1:]),to_return + Semantics.path(self[i+1],branch[1:])]
                 else:
                     raise Exception("wrong info in branch")
         return to_return
@@ -116,11 +116,11 @@ class Graph:
         """Lightweight vertex structure for a graph."""
         # __slots__ = '_element'
     
-        def __init__(self, idx, syntax=[],semantics=[]):
+        def __init__(self, idx, semantics=[]):
             """Do not call constructor directly. Use Graph's insert_vertex(x)."""
             self.idx = idx
-            self.syntax = syntax
             self.semantics = Semantics(idx)
+            self.contradiction = False
         # def element(self):
         #     """Return element associated with this vertex."""
         #     return self._element
@@ -143,7 +143,7 @@ class Graph:
         def __eq__(self,v2):
             if not isinstance(v2,type(self)):
                 raise ValueError("not a vertex to compare")
-            return self.idx==v2.idx and self.syntax==v2.syntax and self.semantics==v2.semantics
+            return self.idx==v2.idx and self.semantics==v2.semantics
 
 
             # return str(self.goal)
@@ -153,12 +153,11 @@ class Graph:
         """Lightweight edge structure for a graph."""
         # __slots__ = '_origin', '_destination', '_element'
     
-        def __init__(self, u, v, rule_encoding=None,matching_dict=None):
+        def __init__(self, u, v, branch=""):
             """Do not call constructor directly. Use Graph's insert_edge(u,v,x)."""
             self._origin = u
             self._destination = v
-            self.rule_encoding = rule_encoding
-            self.matching_dict = matching_dict
+            self.branch = branch    # in the case of branching worlds, self.branch = 'l' or 'r'
     
         def endpoints(self):
             """Return (u,v) tuple for vertices u and v."""
@@ -300,16 +299,16 @@ class Graph:
         for edge in adj[v].values():
             yield edge
 
-    def insert_vertex(self, syntax):
+    def insert_vertex(self):
         """Insert and return a new Vertex with element x."""
         idx = len(self._outgoing)
-        v = self.Vertex(idx,syntax)  #create a new instance in the vertex class
+        v = self.Vertex(idx)  #create a new instance in the vertex class
         self._outgoing[v] = {}
         if self.is_directed():
             self._incoming[v] = {}        # need distinct map for incoming edges
         return v
             
-    def insert_edge(self, u, v, rule_encoding=None,matching_dict=None):
+    def insert_edge(self, u, v, branch = ""):
         """Insert and return a new Edge from u to v with auxiliary element x.
 
         Raise a ValueError if u and v are not vertices of the graph.
@@ -317,7 +316,7 @@ class Graph:
         """
         if self.get_edge(u, v) is not None:      # includes error checking
             raise ValueError('u and v are already adjacent')
-        e = self.Edge(u, v, rule_encoding,matching_dict)
+        e = self.Edge(u, v, branch)
         self._outgoing[u][v] = e
         self._incoming[v][u] = e
         return e
@@ -337,6 +336,25 @@ class Graph:
                 return i
         return None
         # raise ValueError('vertex DNE')
+    
+    def path_length(self, destination, source=None):
+        if source==None:
+            source = self.idx_to_vertex(0)
+        return self.bfs(destination,source,0)
+
+    def bfs(self,destination,source,curr_distance):
+        adj_list = list(self._outgoing[source].keys())
+        if len(adj_list)==0:
+            return -1
+            # deadend, there is no path between 2 nodes
+        for i in range(len(adj_list)):
+            if adj_list[i]==destination:
+                return curr_distance+1
+        for i in range(len(adj_list)):
+            return self.bfs(destination,adj_list[i],curr_distance+1)
+
+        
+
         
     # def goal_to_vertex(self,goal):
     #     # input: goal of a vertex
@@ -350,14 +368,14 @@ class Graph:
     #     return None
     #     # raise ValueError('vertex DNE')
 
-    def encoding_to_edge(self,rule_encoding):
-        # input: encoding of a edge
-        # return :the corresponding edge if the edge exists, none otherwise
-        edges = list(self.edges())
-        for i in range(len(edges)):
-            if edges[i].rule_encoding==rule_encoding:
-                return edges[i]
-        return None
+    # def encoding_to_edge(self,rule_encoding):
+    #     # input: encoding of a edge
+    #     # return :the corresponding edge if the edge exists, none otherwise
+    #     edges = list(self.edges())
+    #     for i in range(len(edges)):
+    #         if edges[i].rule_encoding==rule_encoding:
+    #             return edges[i]
+    #     return None
     
     # def first_vertex_without_goal(self):
     #     # return the vertex with the smallest idx that is without goal

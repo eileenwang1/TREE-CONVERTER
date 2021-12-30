@@ -1,0 +1,6 @@
+syntax: 
+['[](p->q)', '[]p', '~(~[]q->[]r)', '[]q', '~~[]q', '~~[]q ∨ []r']
+['p->q', 'p', 'q']
+semantics:
+['[](p->q)', '[]p', '~(~[]q->[]r)', '[]q', '~~[]q', '~~[]q ∨ []r']
+has contradiction:  False
