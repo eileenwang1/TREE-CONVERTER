@@ -73,12 +73,11 @@ class TreeConstructor(object):
         # create root vertex
         root_vertex = self.graph.insert_vertex()
         self.tree_grow(0,root_vertex)
-        # copy stuff in syntax[0] into the root node
-        # until there is the need to create a new world-create a new world, and copy the corresponding stuff from syntax into the new world
-        # check whether there is a contradiction in the new world, if yes, stop; if no, continue with iterating syntax[0]
-        # check if every world has contradiction
+
         to_print = self.vertex_contradiction(root_vertex)
         # print("final check: ",to_print)
+
+        # todo: make true sentences in semantics to comply to tree rules.
 
 
     def box_false(self,curr_sentence):
@@ -98,6 +97,10 @@ class TreeConstructor(object):
         return to_return
 
     def tree_grow(self, syntax_idx,curr_vertex):
+        # copy stuff in syntax[0] into the root node
+        # until there is the need to create a new world-create a new world, and copy the corresponding stuff from syntax into the new world
+        # check whether there is a contradiction in the new world, if yes, stop; if no, continue with iterating syntax[0]
+        # check if every world has contradiction
         if syntax_idx>len(self.syntax):
             raise Exception("wrong syntax_idx") 
         if not isinstance(curr_vertex,Graph.Vertex):
@@ -163,7 +166,6 @@ class TreeConstructor(object):
                 contra_path += 1
         if contra_path==len(all_paths):
             vertex.contradiction = True
-
             return True
             
         return False  

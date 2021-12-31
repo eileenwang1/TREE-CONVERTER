@@ -1,6 +1,7 @@
 from proof_parser import ProofParser, Proof
 from tree_constructor import TreeConstructor
-pp = ProofParser("testcases/test5")
+from plot import PlotGraph
+pp = ProofParser("testcases/test4")
 proof = Proof(pp.proof_list)
 tc = TreeConstructor(proof)
 tc.syntax_init()
@@ -10,6 +11,8 @@ for i in range(len(tc.syntax)):
     print(tc.syntax[i])
 
 tc.semantics()
+pg = PlotGraph(tc.graph,"testcases/plotting_test4.png")
+pg.show()
 
 # tc.syntax_to_semantics()
 # # print("After semantics")
