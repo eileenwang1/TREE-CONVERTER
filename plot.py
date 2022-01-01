@@ -81,7 +81,7 @@ class PlotGraph(object):
         visual_style["vertex_label"] = self.plotted.vs['label']
         # visual_style["edge_width"] = [1 + 2 * int(is_formal) for is_formal in g.es["is_formal"]]
         visual_style["layout"] = layout
-        visual_style["bbox"] = (1000, 1000)
+        visual_style["bbox"] = (700, 700)
         visual_style["margin"] = 100
         # visual_style["order"] = [0,1,2,3].sort()
         

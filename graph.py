@@ -399,20 +399,20 @@ class Graph:
     #     return curr_edge
 
                 
-# a = Semantics()
-# a.append(1)
+# a = Semantics(0)
+# a.append("a")
 # print(a)
 # print(len(a))
-# a.append([3,4])
+# a.append(["b","c"])
 # print(a)
 # print(len(a))
-# a.append(7)
+# a.append("d")
 # print(a)
 # print(len(a))
-# a.append([9,10])
+# a.append(["e","f"])
 # print(a)
 # print(len(a))
-# a.append(11)
+# a.append("g")
 # print(a)
 # print(len(a))
 
